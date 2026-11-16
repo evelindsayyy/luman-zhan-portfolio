@@ -23,7 +23,7 @@ We don't need to test specific values because:
 The fact that `config` exists and is usable is the test.
 """
 
-from learn_personal_portfolio_ai.config import config
+from portfolio_ai.config import config
 
 
 def test_new_config():

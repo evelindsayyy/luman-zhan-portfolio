@@ -36,7 +36,7 @@ How it works
 
 Example usage::
 
-    from learn_personal_portfolio_ai.config import config
+    from portfolio_ai.config import config
 
     # Anywhere in your code - no environment checks needed
     session = boto3.Session(

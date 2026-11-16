@@ -21,15 +21,15 @@ from fastapi import FastAPI, Request, Query
 from fastapi.responses import JSONResponse, StreamingResponse
 from vercel_ai_sdk_mate.api import RequestBody  # Parses AI SDK request format
 
-from learn_personal_portfolio_ai.paths import path_enum  # System prompt & knowledge base paths
-from learn_personal_portfolio_ai.boto_ses import bedrock_runtime_client  # Pre-configured Bedrock client
-from learn_personal_portfolio_ai.utils import debug
-from learn_personal_portfolio_ai.config import config
-from learn_personal_portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
-from learn_personal_portfolio_ai.ai_sdk_adapter import debug_ai_sdk_request
-from learn_personal_portfolio_ai.ai_sdk_adapter import ai_sdk_message_generator
-from learn_personal_portfolio_ai.ai_sdk_adapter import get_last_user_message_text
-from learn_personal_portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
+from portfolio_ai.paths import path_enum  # System prompt & knowledge base paths
+from portfolio_ai.boto_ses import bedrock_runtime_client  # Pre-configured Bedrock client
+from portfolio_ai.utils import debug
+from portfolio_ai.config import config
+from portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
+from portfolio_ai.ai_sdk_adapter import debug_ai_sdk_request
+from portfolio_ai.ai_sdk_adapter import ai_sdk_message_generator
+from portfolio_ai.ai_sdk_adapter import get_last_user_message_text
+from portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
 # fmt: on
 
 # Add project root to sys.path for module imports
