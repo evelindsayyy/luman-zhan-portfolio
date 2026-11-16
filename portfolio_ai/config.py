@@ -111,11 +111,15 @@ class Config:
     def new_in_vercel_runtime(cls):
         """
         explicit credentials from environment variables (serverless has no ~/.aws)
+
+        Read with .get(): until the keys are set, the API must still start,
+        and only a Bedrock call fails. A missing key used to raise at import
+        and take down every /api route, /api/hello included.
         """
         return cls(
             aws_region="us-east-1",
-            aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-            aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+            aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
         )
 
     @classmethod

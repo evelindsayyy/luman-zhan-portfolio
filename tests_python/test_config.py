@@ -23,7 +23,28 @@ We don't need to test specific values because:
 The fact that `config` exists and is usable is the test.
 """
 
-from portfolio_ai.config import config
+from portfolio_ai.config import Config, config
+
+
+def test_vercel_config_reads_the_aws_keys(monkeypatch):
+    monkeypatch.setenv("AWS_ACCESS_KEY_ID", "AKIA-TEST")
+    monkeypatch.setenv("AWS_SECRET_ACCESS_KEY", "secret-test")
+    vercel = Config.new_in_vercel_runtime()
+    assert vercel.aws_access_key_id == "AKIA-TEST"
+    assert vercel.aws_secret_access_key == "secret-test"
+
+
+def test_vercel_config_without_keys_still_loads(monkeypatch):
+    """
+    The keys are set only when the AI assistant is deployed. Until then the
+    API must still start: a KeyError here took down every /api route on
+    Vercel, /api/hello included.
+    """
+    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
+    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
+    vercel = Config.new_in_vercel_runtime()
+    assert vercel.aws_access_key_id is None
+    assert vercel.aws_secret_access_key is None
 
 
 def test_new_config():
