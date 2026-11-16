@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Python tests
+        run: |
+          uv sync --all-extras --frozen
+          uv run pytest -q tests_python
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+      - name: Node tests
+        run: |
+          pnpm install --frozen-lockfile
+          node --test tests_node/*.test.js
+
+      - name: Build
+        run: pnpm build
