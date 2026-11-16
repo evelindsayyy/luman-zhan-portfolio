@@ -74,8 +74,11 @@ import dataclasses
 
 from .runtime import runtime
 
+# Nova Micro: the cheapest Bedrock model that supports prompt caching.
+DEFAULT_MODEL_ID = "us.amazon.nova-micro-v1:0"
 
-@dataclasses.dataclass
+
+@dataclasses.dataclass(frozen=True)
 class Config:
     """
     Application configuration container.
@@ -88,15 +91,21 @@ class Config:
         aws_region: AWS region for all AWS services (e.g., "us-east-1")
         aws_access_key_id: AWS access key. None means use default credential chain.
         aws_secret_access_key: AWS secret key. None means use default credential chain.
-        model_id: Bedrock model ID
-        max_message_length: Maximum allowed characters in user message. Prevents abuse.
+        model_id: Bedrock model ID. CHAT_MODEL_ID overrides it, which is how
+            the Plan B model (Claude Haiku on Bedrock) is switched on without
+            a code change.
+        max_output_tokens: Cap on one reply's length, the main cost lever.
+        temperature: Low, because answers should stick to the knowledge base.
     """
 
     aws_region: str | None = dataclasses.field(default=None)
     aws_access_key_id: str | None = dataclasses.field(default=None)
     aws_secret_access_key: str | None = dataclasses.field(default=None)
-    model_id: str | None = dataclasses.field(default="us.amazon.nova-micro-v1:0")
-    # max_message_length: int = dataclasses.field(default=1000)
+    model_id: str = dataclasses.field(
+        default_factory=lambda: os.environ.get("CHAT_MODEL_ID") or DEFAULT_MODEL_ID
+    )
+    max_output_tokens: int = dataclasses.field(default=600)
+    temperature: float = dataclasses.field(default=0.3)
 
     @classmethod
     def new_in_local_runtime(cls):

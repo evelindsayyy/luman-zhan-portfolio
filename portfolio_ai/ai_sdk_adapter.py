@@ -17,37 +17,26 @@ Dependencies:
   making it easier to work with the JSON data from the frontend.
 """
 
-import sys
 import json
+import logging
+import typing as T
 import uuid
 
-from fastapi import Request
 import vercel_ai_sdk_mate.api as vercel_ai_sdk_mate
 
-from .utils import debug
+logger = logging.getLogger(__name__)
 
 
-def part_to_bedrock_content(part: vercel_ai_sdk_mate.T_PART) -> dict:
+def part_to_bedrock_content(part: vercel_ai_sdk_mate.T_PART) -> dict | None:
     """
-    Convert an AI SDK message part to Bedrock content block format.
+    Convert an AI SDK message part to a Bedrock content block.
 
-    AI SDK uses 'parts' to support multi-modal content (text, images, etc.).
-    This function converts each part to Bedrock's content block format.
-
-    Args:
-        part: A message part from AI SDK (text, image, etc.).
-
-    Returns:
-        dict: Bedrock content block (e.g., {"text": "Hello"}).
-
-    Raises:
-        TypeError: If the part type is not supported (e.g., image, file).
+    Only non-empty text is sent. Other parts (reasoning, and anything a later
+    SDK version adds) are dropped rather than failing the whole request.
     """
-    if part.type == vercel_ai_sdk_mate.MessagePartTypeEnum.TEXT.value:
+    if part.type == vercel_ai_sdk_mate.MessagePartTypeEnum.TEXT.value and part.text.strip():
         return {"text": part.text}
-    else:
-        # Currently only text is supported; extend here for images, files, etc.
-        raise TypeError(f"Unsupported part type: {part.type}")
+    return None
 
 
 def message_to_bedrock_message(message: vercel_ai_sdk_mate.Message) -> dict | None:
@@ -74,14 +63,12 @@ def message_to_bedrock_message(message: vercel_ai_sdk_mate.Message) -> dict | No
         vercel_ai_sdk_mate.MessageRoleEnum.ASSISTANT.value: "assistant",
     }
 
-    if message.role in ai_sdk_role_to_bedrock_role_mapping:
-        return {
-            "role": ai_sdk_role_to_bedrock_role_mapping[message.role],
-            "content": [part_to_bedrock_content(part) for part in message.parts],
-        }
-    else:
-        # Skip messages with unmapped roles (e.g., system messages)
-        return None
+    if message.role not in ai_sdk_role_to_bedrock_role_mapping:
+        return None  # e.g. system messages: the server owns the system prompt
+    content = [block for part in message.parts if (block := part_to_bedrock_content(part))]
+    if not content:
+        return None  # Bedrock rejects a message with no content
+    return {"role": ai_sdk_role_to_bedrock_role_mapping[message.role], "content": content}
 
 
 def request_body_to_bedrock_converse_messages(
@@ -140,41 +127,32 @@ def get_last_user_message_text(request_body: vercel_ai_sdk_mate.RequestBody) -> 
         return None
 
 
-async def debug_ai_sdk_request(request: Request) -> dict:
+def _sse(payload: dict | str) -> str:
+    data = payload if isinstance(payload, str) else json.dumps(payload)
+    return f"data: {data}\n\n"
+
+
+def ui_message_stream(deltas: T.Iterable[str], fallback: str) -> T.Iterator[str]:
     """
-    Debug: Log incoming request for troubleshooting
+    Wrap streamed text in the AI SDK UI message stream protocol (SSE).
+
+    https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol
+    Each delta is sent as it arrives. If the model call fails, before or
+    midway through the reply, the visitor gets ``fallback`` as text instead
+    of a broken chat, and the error goes to the server log.
     """
-    debug("====== Incoming request")
-    debug("------ Request Headers")
-    for key, value in request.headers.items():
-        debug(f"{key}: {value}")
-    debug("------ Request Body")
-    request_body_data = await request.json()
-    request_body_formatted = json.dumps(request_body_data, indent=2, ensure_ascii=False)
-    debug(request_body_formatted)
-    sys.stderr.flush()
-    return request_body_data
-
-
-def ai_sdk_message_generator(output_text: str):
-    """
-    Stream response using AI SDK v5 Data Stream Protocol
-    SSE format: each line starts with "data: " followed by JSON payload.
-    Text streaming uses a three-phase pattern: start -> delta(s) -> end
-    """
-    message_id = str(uuid.uuid4())  # Unique ID for this text block
-
-    # Phase 1: Signal that a new text block is starting
-    yield f'data: {json.dumps({"type": "text-start", "id": message_id})}\n\n'
-
-    # Phase 2: Send the actual text content (can be split into multiple deltas)
-    yield f'data: {json.dumps({"type": "text-delta", "id": message_id, "delta": output_text})}\n\n'
-
-    # Phase 3: Signal that the text block is complete
-    yield f'data: {json.dumps({"type": "text-end", "id": message_id})}\n\n'
-
-    # Signal that the entire message generation is finished
-    yield f'data: {json.dumps({"type": "finish-message", "finishReason": "stop"})}\n\n'
-
-    # SSE stream termination marker
-    yield "data: [DONE]\n\n"
+    text_id = str(uuid.uuid4())
+    yield _sse({"type": "start"})
+    yield _sse({"type": "text-start", "id": text_id})
+    sent_any = False
+    try:
+        for delta in deltas:
+            sent_any = True
+            yield _sse({"type": "text-delta", "id": text_id, "delta": delta})
+    except Exception:  # the stream boundary: log it, tell the visitor
+        logger.exception("chat stream failed")
+        prefix = "\n\n" if sent_any else ""
+        yield _sse({"type": "text-delta", "id": text_id, "delta": prefix + fallback})
+    yield _sse({"type": "text-end", "id": text_id})
+    yield _sse({"type": "finish", "finishReason": "stop"})
+    yield _sse("[DONE]")

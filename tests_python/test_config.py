@@ -56,3 +56,18 @@ def test_new_config():
     idiom meaning "I'm using this value just to verify it exists."
     """
     _ = config
+
+
+def test_chat_model_defaults_to_nova_micro(monkeypatch):
+    monkeypatch.delenv("CHAT_MODEL_ID", raising=False)
+    assert Config().model_id == "us.amazon.nova-micro-v1:0"
+
+
+def test_chat_model_can_be_switched_by_env(monkeypatch):
+    monkeypatch.setenv("CHAT_MODEL_ID", "us.anthropic.claude-haiku-test")
+    assert Config().model_id == "us.anthropic.claude-haiku-test"
+
+
+def test_blank_chat_model_env_falls_back_to_default(monkeypatch):
+    monkeypatch.setenv("CHAT_MODEL_ID", "")
+    assert Config().model_id == "us.amazon.nova-micro-v1:0"

@@ -1,161 +1,74 @@
 # -*- coding: utf-8 -*-
 
 """
-FastAPI backend for AI chat powered by AWS Bedrock.
+FastAPI backend for the site's AI assistant, served as a Vercel Python Function.
 
-This module provides the API endpoints that connect the frontend chat UI
-to AWS Bedrock's Nova model. It implements the Vercel AI SDK v5 Data Stream
-Protocol using Server-Sent Events (SSE) for real-time streaming responses.
-
-Key components:
-- /api/hello: Health check endpoint
-- /api/chat: Main chat endpoint that processes messages and streams AI responses
+- /api/hello: health check
+- /api/chat: takes the AI SDK chat history, streams Grace's assistant's reply
+  from Amazon Bedrock in the AI SDK UI message stream protocol (SSE)
 """
 
+import logging
 import os
 import sys
-import json
 
-# fmt: off
-from fastapi import FastAPI, Request, Query
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from vercel_ai_sdk_mate.api import RequestBody  # Parses AI SDK request format
-
-from portfolio_ai.paths import path_enum  # System prompt & knowledge base paths
-from portfolio_ai.boto_ses import bedrock_runtime_client  # Pre-configured Bedrock client
-from portfolio_ai.utils import debug
-from portfolio_ai.config import config
-from portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
-from portfolio_ai.ai_sdk_adapter import debug_ai_sdk_request
-from portfolio_ai.ai_sdk_adapter import ai_sdk_message_generator
-from portfolio_ai.ai_sdk_adapter import get_last_user_message_text
-from portfolio_ai.multi_round_bedrock_runtime_chat_manager import ChatSession
-# fmt: on
 
 # Add project root to sys.path for module imports
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
+# fmt: off
+from portfolio_ai.paths import path_enum  # System prompt & knowledge base paths
+from portfolio_ai.boto_ses import bedrock_runtime_client  # Pre-configured Bedrock client
+from portfolio_ai.config import config
+from portfolio_ai.chat import build_system, stream_reply
+from portfolio_ai.ai_sdk_adapter import request_body_to_bedrock_converse_messages
+from portfolio_ai.ai_sdk_adapter import ui_message_stream
+# fmt: on
+
+logging.basicConfig(level=logging.INFO, stream=sys.stderr, format="%(levelname)s %(name)s: %(message)s")
+
+FALLBACK_REPLY = (
+    "Sorry, the assistant can't answer right now. "
+    "You can reach Grace directly at zhanluman0612@gmail.com."
+)
+
+# Built once per cold start; identical for every request, which is what lets
+# Bedrock serve it from cache.
+SYSTEM = build_system(path_enum.instruction_content, path_enum.knowledge_base_content)
+
 app = FastAPI()
 
 
 @app.get("/api/hello")
 async def hello_world():
-    """
-    Health check endpoint for testing FastAPI integration.
-
-    Returns a simple JSON response to verify the API is running.
-    """
-    return JSONResponse(
-        content={
-            "message": "Hello from FastAPI!",
-            "status": "success",
-        },
-    )
+    """Health check endpoint for testing FastAPI integration."""
+    return JSONResponse(content={"message": "Hello from FastAPI!", "status": "success"})
 
 
 @app.post("/api/chat")
-async def handle_chat_data(request: Request, protocol: str = Query("data")):
-    """
-    Main chat endpoint that processes user messages and returns AI responses.
-
-    This endpoint implements the Vercel AI SDK v5 Data Stream Protocol using
-    Server-Sent Events (SSE). The frontend sends chat messages, and we stream
-    back the AI's response in real-time.
-
-    Protocol docs: https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol
-
-    Args:
-        request: The incoming HTTP request containing chat messages
-        protocol: Stream protocol version (default: "data" for AI SDK v5)
-    """
-    # --- Log incoming request for troubleshooting
-    request_body_data = await debug_ai_sdk_request(request=request)
-
-    # --- Parse the incoming request into AI SDK format
-    request_body = RequestBody(**request_body_data)
-
-    # --- Check message length ---
-    # Uncomment below to enable max message length check, preventing users from sending overly long messages
-    # last_user_message = get_last_user_message_text(request_body)
-    # If extraction failed, skip validation; otherwise check length
-    # if last_user_message and len(last_user_message) > config.max_message_length:
-    #     error_msg = f"Message too long. Maximum {config.max_message_length} characters allowed."
-    #     response = StreamingResponse(
-    #         ai_sdk_message_generator(output_text=error_msg),
-    #         media_type="text/event-stream",
-    #     )
-    #     response.headers["x-vercel-ai-ui-message-stream"] = "v1"
-    #     response.headers["Cache-Control"] = "no-cache"
-    #     response.headers["Connection"] = "keep-alive"
-    #     return response
-
-    # --- Initialize Bedrock chat session ---
-    # Uses cross-region inference profile for automatic load balancing across regions
-    chat_session = ChatSession(
-        client=bedrock_runtime_client,
-        model_id=config.model_id,  # Cross-region inference profile
-        system=[
-            # System prompt defining AI behavior
-            {
-                "text": path_enum.instruction_content
-            },
-            # Cache the system prompt to save costs
-            {
-                "cachePoint": {"type": "default"}
-            },
-        ],
-    )
-
-    # Restore session ID from frontend to maintain conversation continuity
-    chat_session._session_id = request_body.id
-
-    # --- Seed the conversation with knowledge base context ---
-    # This pre-populates the chat with background knowledge the AI should reference.
-    # The cachePoint ensures this large knowledge base is cached for cost savings.
-    chat_session_messages = [
-        {
-            "role": "user",
-            "content": [
-                {"text": path_enum.knowledge_base_content},
-                {
-                    "cachePoint": {"type": "default"}
-                },  # Critical: cache the knowledge base
-            ],
-        },
-        {
-            "role": "assistant",
-            "content": [
-                {
-                    "text": "I've reviewed the knowledge base and I'm ready to answer questions based on it."
-                },
-            ],
-        },
-    ]
-
-    # --- Append conversation history from the frontend ---
-    # The AI SDK request contains all previous messages in the chat.
-    # We convert them to Bedrock's format to maintain multi-turn conversation context.
+async def handle_chat_data(request: Request):
+    """Stream the assistant's reply to the conversation so far."""
+    request_body = RequestBody(**(await request.json()))
     messages = request_body_to_bedrock_converse_messages(request_body)
-    chat_session_messages.extend(messages)
-    chat_session._messages = chat_session_messages
 
-    # --- Call AWS Bedrock to generate AI response ---
-    response = chat_session.send_message([])  # Empty list = no additional content
-
-    # Log response for debugging
-    output_text = chat_session.debug_response(response)
-
-    # --- Return SSE streaming response ---
-    # AI SDK v5 uses "x-vercel-ai-ui-message-stream" header (not "x-vercel-ai-data-stream")
+    deltas = stream_reply(
+        client=bedrock_runtime_client,
+        model_id=config.model_id,
+        system=SYSTEM,
+        messages=messages,
+        max_tokens=config.max_output_tokens,
+        temperature=config.temperature,
+    )
     response = StreamingResponse(
-        ai_sdk_message_generator(output_text=output_text),
-        media_type="text/event-stream",  # Standard MIME type for Server-Sent Events
+        ui_message_stream(deltas, fallback=FALLBACK_REPLY),
+        media_type="text/event-stream",
     )
-    response.headers["x-vercel-ai-ui-message-stream"] = "v1"  # Required for AI SDK v5
-    response.headers["Cache-Control"] = (
-        "no-cache"  # Disable caching for real-time streaming
-    )
-    response.headers["Connection"] = "keep-alive"  # Keep connection open for SSE
+    response.headers["x-vercel-ai-ui-message-stream"] = "v1"  # Required for AI SDK v5+
+    response.headers["Cache-Control"] = "no-cache"
+    response.headers["Connection"] = "keep-alive"
     return response
