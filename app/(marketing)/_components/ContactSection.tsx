@@ -1,7 +1,9 @@
 "use client"
 
 import { Mail } from "lucide-react"
-import { FaLinkedin } from "react-icons/fa"
+import { FaGithub, FaLinkedin } from "react-icons/fa"
+
+import { profile } from "@/data/profile"
 
 export default function ContactSection() {
   return (
@@ -13,26 +15,35 @@ export default function ContactSection() {
         </h2>
 
         <p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-xl">
-          Ready to collaborate or discuss opportunities? Reach out and let's build something great together.
+          {profile.target} Email is the fastest way to reach me.
         </p>
 
         {/* Action Buttons - Bold Style */}
         <div className="flex flex-col sm:flex-row gap-4">
           <a
-            href="mailto:hello@example.com"
+            href={`mailto:${profile.email}`}
             className="bold-button-accent flex items-center justify-center gap-3"
           >
             <Mail size={20} />
-            SEND EMAIL
+            {profile.email}
           </a>
           <a
-            href="https://example.com"
+            href={profile.links.linkedin}
             target="_blank"
             rel="noopener noreferrer"
             className="bold-button flex items-center justify-center gap-3"
           >
             <FaLinkedin size={20} />
             LINKEDIN
+          </a>
+          <a
+            href={profile.links.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bold-button flex items-center justify-center gap-3"
+          >
+            <FaGithub size={20} />
+            GITHUB
           </a>
         </div>
       </div>

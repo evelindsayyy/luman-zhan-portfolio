@@ -6,6 +6,8 @@ import Image from "next/image"
 import { ArrowRight } from "lucide-react"
 import { FaGithub, FaLinkedin } from "react-icons/fa"
 
+import { profile } from "@/data/profile"
+
 export default function Hero() {
   const [isVisible, setIsVisible] = useState(false)
 
@@ -25,35 +27,43 @@ export default function Hero() {
           >
             {/* Huge Name */}
             <h1 className="font-display text-display-xl text-black dark:text-white leading-none mb-4">
-              JOHN
+              {profile.firstName.toUpperCase()}
               <br />
-              <span className="accent-underline">DOE</span>
+              <span className="accent-underline">{profile.lastName.toUpperCase()}</span>
             </h1>
 
             {/* Title with accent */}
-            <p className="font-display text-display-md text-accent mb-6">
-              AI ENGINEER
+            <p className="font-display text-display-md text-accent mb-2">
+              AI/ML ENGINEER
+            </p>
+            <p className="text-sm uppercase tracking-widest text-gray-500 mb-6">
+              Goes by {profile.preferredName} · {profile.location}
             </p>
 
             {/* Divider */}
             <div className="w-24 h-1 bg-black dark:bg-white mb-6" />
 
             {/* Short Description */}
-            <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-md mb-8 leading-relaxed">
-              Building intelligent systems that solve real problems. 10+ Python libraries. 5 production AI apps.
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md mb-4 leading-relaxed">
+              {profile.thesis}
             </p>
+            <p className="font-semibold max-w-md mb-8">{profile.target}</p>
 
             {/* Social Icons */}
             <div className="flex gap-4 mb-8">
               <a
-                href="https://example.com"
+                href={profile.links.github}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-3 border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
                 aria-label="GitHub"
               >
                 <FaGithub size={24} />
               </a>
               <a
-                href="https://example.com"
+                href={profile.links.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-3 border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors cursor-pointer"
                 aria-label="LinkedIn"
               >
@@ -70,10 +80,11 @@ export default function Hero() {
               {/* Image with bold border */}
               <div className="w-64 h-80 sm:w-80 sm:h-96 lg:w-96 lg:h-[28rem] border-4 border-black dark:border-white overflow-hidden shadow-bold">
                 <Image
-                  src="/images/profile.png"
-                  alt="John Doe Profile Photo"
-                  width={400}
-                  height={500}
+                  src={profile.photo.portrait}
+                  alt={profile.photo.alt}
+                  width={800}
+                  height={1000}
+                  priority
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -93,10 +104,10 @@ export default function Hero() {
           >
             <div>
               <h3 className="font-display text-2xl sm:text-3xl">
-                CHAT WITH VIRTUAL JOHN DOE
+                ASK MY AI ASSISTANT
               </h3>
               <p className="text-gray-600 dark:text-gray-400 group-hover:text-gray-300 dark:group-hover:text-gray-600 text-sm sm:text-base">
-                Explore my experience, projects, and discover what makes me different
+                Ask about my projects, my experience, or what I am looking for
               </p>
             </div>
             <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />

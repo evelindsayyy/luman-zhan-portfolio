@@ -4,23 +4,24 @@ import HomePageContent from "./HomePageContent"
 
 export async function generateMetadata(): Promise<Metadata> {
   return generateSEOMetadata({
-    title: "John Doe - Solution Architect & Builder",
-    description: "Solution Architect and Open Source Developer with 150+ Python libraries, 10M+ monthly downloads, and 600+ repositories. Specialized in cloud architecture, AI, and enterprise solutions.",
+    title: "Luman (Grace) Zhan, AI/ML Engineer",
+    description: "Luman (Grace) Zhan, Duke CS student and AI/ML engineer who builds LLM systems and measures whether they work: agents on Amazon Bedrock AgentCore with MCP, and LLM evaluation validated against people. Looking for Summer 2027 AI/ML and software engineering internships.",
     keywords: [
-      "Open Source Developer",
-      "Python Libraries",
-      "Cloud Architecture",
-      "Enterprise Solutions",
-      "Automation",
-      "Software Engineering",
-      "Tech Leadership",
+      "AI/ML engineer",
+      "LLM evaluation",
+      "LLM-as-judge",
+      "Amazon Bedrock AgentCore",
+      "MCP",
+      "AI agents",
+      "Duke Computer Science",
+      "Summer 2027 internship",
     ],
-    url: "https://johndoe.me",
-    ogTitle: "John Doe - Solution Architect & Open Source Builder",
-    ogDescription: "Experienced Solution Architect and prolific Open Source Developer. Creator of 160+ Python libraries with 10M+ monthly downloads. Specialized in cloud architecture, automation, and enterprise solutions.",
-    imageAlt: "John Doe Profile Photo - Solution Architect & Builder",
-    twitterTitle: "John Doe - Solution Architect & Builder",
-    twitterDescription: "Solution Architect and Open Source Developer with 160+ Python libraries, 10M+ monthly downloads, and 600+ repositories. Specialized in cloud architecture, AI, and enterprise solutions.",
+    url: "https://lumanzhan.com",
+    ogTitle: "Luman (Grace) Zhan, AI/ML Engineer",
+    ogDescription: "Luman (Grace) Zhan, Duke CS student and AI/ML engineer who builds LLM systems and measures whether they work: agents on Amazon Bedrock AgentCore with MCP, and LLM evaluation validated against people. Looking for Summer 2027 AI/ML and software engineering internships.",
+    imageAlt: "Portrait of Luman (Grace) Zhan",
+    twitterTitle: "Luman (Grace) Zhan, AI/ML Engineer",
+    twitterDescription: "Luman (Grace) Zhan, Duke CS student and AI/ML engineer who builds LLM systems and measures whether they work: agents on Amazon Bedrock AgentCore with MCP, and LLM evaluation validated against people. Looking for Summer 2027 AI/ML and software engineering internships.",
   })
 }
 

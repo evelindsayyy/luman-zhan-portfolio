@@ -2,7 +2,10 @@
 
 import Hero from "./_components/Hero"
 import StatsSection from "./_components/StatsSection"
+import ProjectsSection from "./_components/ProjectsSection"
+import ExperienceSection from "./_components/ExperienceSection"
 import ContactSection from "./_components/ContactSection"
+import { profile } from "@/data/profile"
 
 export default function HomePageContent() {
   return (
@@ -12,8 +15,14 @@ export default function HomePageContent() {
         {/* Hero Section - Split Screen */}
         <Hero />
 
-        {/* Achievement Stats */}
+        {/* Numbers a visitor can check */}
         <StatsSection />
+
+        {/* Featured projects */}
+        <ProjectsSection />
+
+        {/* Work, research and education */}
+        <ExperienceSection />
 
         {/* Contact Section */}
         <ContactSection />
@@ -22,7 +31,7 @@ export default function HomePageContent() {
         <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t-4 border-black dark:border-white">
           <div className="max-w-7xl mx-auto text-center">
             <p className="font-display text-sm text-gray-600 dark:text-gray-400 uppercase tracking-widest">
-              &copy; {new Date().getFullYear()} JOHN DOE. ALL RIGHTS RESERVED.
+              &copy; {new Date().getFullYear()} {profile.name.toUpperCase()}
             </p>
           </div>
         </footer>
