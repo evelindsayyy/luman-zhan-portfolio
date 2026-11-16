@@ -90,3 +90,19 @@ test("no template placeholders are left", () => {
     assert.doesNotMatch(readFileSync(file, "utf8"), placeholder, file);
   }
 });
+
+test("the knowledge base is rebuilt from data/", async () => {
+  const { buildKnowledgeBase, KB_PATH } = await import("../scripts/build-kb.mjs");
+  assert.equal(
+    readFileSync(KB_PATH, "utf8"),
+    buildKnowledgeBase(),
+    "knowledge-base.md is stale: run `node scripts/build-kb.mjs`",
+  );
+});
+
+test("the knowledge base is long enough for prompt caching", async () => {
+  // Bedrock caches a prefix only from 1,024 tokens on Nova models. At
+  // roughly 4 characters per token, 6,000 characters leaves a margin.
+  const { buildKnowledgeBase } = await import("../scripts/build-kb.mjs");
+  assert.ok(buildKnowledgeBase().length >= 6000);
+});

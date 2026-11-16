@@ -38,6 +38,10 @@ run = "uv export --format requirements-txt --no-dev --no-emit-project > requirem
 description = "🧪 Run Python tests with pytest"
 run = ".venv/bin/pytest tests_python"
 
+[tasks.kb-build]
+description = "📚 Rebuild the AI assistant's knowledge base from data/"
+run = "node scripts/build-kb.mjs"
+
 [tasks.test-node]
 description = "🧪 Run Node.js tests"
 run = "node --test tests_node/*.test.js"
