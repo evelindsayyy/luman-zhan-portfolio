@@ -1,6 +1,5 @@
 # User Settings
 .claude/claude-code-messages.md
-.claude/skills/lesson-smith*
 .idea
 tmp
 
@@ -148,6 +147,8 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
