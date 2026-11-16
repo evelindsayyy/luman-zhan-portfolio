@@ -18,12 +18,13 @@ const sourceSans = Source_Sans_3({
 
 // 根布局的默认元数据（会被页面级元数据覆盖）
 export const metadata: Metadata = {
+  // Social preview images resolve against the real site, not localhost.
+  metadataBase: new URL("https://lumanzhan.com"),
   ...generateSEOMetadata({
-    title: "John Doe - Solution Architect & Builder",
-    description: "Personal portfolio of John Doe, a Data/AI Architect specializing in open source solutions and enterprise architecture.",
-    keywords: ["Data Architect", "AI Architect", "Open Source", "Enterprise"],
+    title: "Luman (Grace) Zhan, AI/ML Engineer",
+    description: "Luman (Grace) Zhan, Duke CS student and AI/ML engineer who builds LLM systems and measures whether they work: agents on Amazon Bedrock AgentCore with MCP, and LLM evaluation validated against people. Looking for Summer 2027 AI/ML and software engineering internships.",
+    keywords: ["AI/ML engineer", "LLM evaluation", "AI agents", "Amazon Bedrock AgentCore"],
   }),
-  generator: 'v0.dev',
   icons: {
     icon: [
       { url: '/icon.png', type: 'image/png' },

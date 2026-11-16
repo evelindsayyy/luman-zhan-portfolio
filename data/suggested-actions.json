@@ -1,22 +1,22 @@
 [
   {
-    "title": "👤 About Me",
-    "label": "Understanding John's background",
-    "action": "Tell me about John's professional background."
+    "title": "🧪 LLM evaluation",
+    "label": "How she checked an LLM judge against people",
+    "action": "How did Grace check that the LLM judge at Duke Code+ agrees with human raters?"
   },
   {
-    "title": "💼 Work Experience",
-    "label": "Career history and key roles",
-    "action": "Walk me through John's work experience."
+    "title": "🤖 Agents on AWS",
+    "label": "The Lumina Reach architecture",
+    "action": "Walk me through the architecture of Lumina Reach on Amazon Bedrock AgentCore."
   },
   {
-    "title": "🤖 AI Expertise",
-    "label": "AI Applications",
-    "action": "What AI application has John built?"
+    "title": "💼 Experience",
+    "label": "Internships and research",
+    "action": "Summarize Grace's internships and research experience."
   },
   {
-    "title": "🔧 Technical Skills",
-    "label": "Technologies and certifications",
-    "action": "What technologies does John specialize in?"
+    "title": "🎯 What's next",
+    "label": "Roles she is looking for",
+    "action": "What roles is Grace looking for, and when is she available?"
   }
 ]

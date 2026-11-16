@@ -1,24 +1,24 @@
 export const DEFAULT_SEO_CONFIG = {
-  siteName: "John Doe Portfolio",
+  siteName: "Luman (Grace) Zhan",
   author: {
-    name: "John Doe",
-    url: "https://johndoe.me",
+    name: "Luman (Grace) Zhan",
+    url: "https://lumanzhan.com",
   },
-  creator: "John Doe",
+  creator: "Luman (Grace) Zhan",
   locale: "en_US",
-  image: "/images/profile.png",
-  imageWidth: 192,
-  imageHeight: 192,
+  image: "/images/profile-square.jpg",
+  imageWidth: 512,
+  imageHeight: 512,
   type: "website" as const,
 }
 
 export const COMMON_KEYWORDS = [
-  "John Doe",
-  "Solution Architect",
-  "Full Stack Developer",
-  "AWS",
+  "Luman Zhan",
+  "Grace Zhan",
+  "AI/ML engineer",
+  "LLM evaluation",
+  "AI agents",
   "Python",
   "TypeScript",
-  "Next.js",
-  "System Design",
+  "AWS",
 ]

@@ -124,7 +124,7 @@ export function Chat() {
                   <div className="flex-1">
                     <h3 className="font-display text-sm text-black dark:text-white">AI ASSISTANT</h3>
                     <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                      I'm here to help you understand <span className="font-semibold text-accent">John Doe</span>'s unique value.
+                      I answer questions about <span className="font-semibold text-accent">Grace</span>'s work, from what she has built to what she is looking for.
                     </p>
                   </div>
                 </div>

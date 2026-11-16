@@ -1,29 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // A stray lockfile higher up the home directory made Next guess the wrong
+  // workspace root; pin it to this project.
+  turbopack: { root: __dirname },
   // Performance optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production', // Remove console.log in production
   },
 
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'cdn.johndoe.me',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'sh-img-cdn.johndoe.me',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.johndoe.me',
-        pathname: '/**',
-      },
-    ],
-  },
 
   rewrites: async () => {
     return [

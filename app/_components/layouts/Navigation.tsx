@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
 import { NavItem, NavigationProps } from "@/types"
+import { profile } from "@/data/profile"
 
 const DEFAULT_NAV_ITEMS: NavItem[] = [
   { label: "Home", href: "/" },
@@ -30,8 +31,10 @@ export default function Navigation({ items = DEFAULT_NAV_ITEMS }: NavigationProp
           <Link
             href="/"
             className="font-display text-2xl text-black dark:text-white hover:text-accent transition-colors"
+            aria-label={`${profile.name}, home`}
           >
-            JD
+            {profile.firstName[0]}
+            {profile.lastName[0]}
           </Link>
 
           {/* Desktop Navigation */}

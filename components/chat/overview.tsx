@@ -19,7 +19,7 @@ export const Overview = () => {
           <div className="w-24 h-24 border-4 border-black dark:border-white overflow-hidden mb-6">
             <Image
               src={CDN_ASSETS.PROFILE_PHOTO}
-              alt="John Doe Profile Photo"
+              alt="Portrait of Luman (Grace) Zhan"
               width={96}
               height={96}
               className="w-full h-full object-cover"
@@ -28,11 +28,11 @@ export const Overview = () => {
 
           {/* Welcome Text */}
           <h2 className="font-display text-3xl sm:text-4xl text-black dark:text-white mb-4">
-            HI! I'M JOHN'S <span className="text-accent">{METADATA.AI_ASSISTANT_NAME}</span>
+            HI! I'M GRACE'S <span className="text-accent">{METADATA.AI_ASSISTANT_NAME}</span>
           </h2>
 
           <p className="text-gray-600 dark:text-gray-400 max-w-md">
-            Ask me anything about <span className="font-semibold text-accent">John Doe</span>'s professional background. I'm here to help you understand his unique value proposition!
+            Ask me about <span className="font-semibold text-accent">Luman (Grace) Zhan</span>'s projects, experience and skills, or what she is looking for next.
           </p>
         </div>
       </div>
