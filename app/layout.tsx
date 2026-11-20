@@ -1,28 +1,26 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Inter, Bebas_Neue, Source_Sans_3 } from "next/font/google"
+import { Inter_Tight, IBM_Plex_Mono, Roboto_Flex } from "next/font/google"
 import { generateSEOMetadata } from "@/lib/seo/generateMetadata"
+import { profile } from "@/data/profile"
 import "./globals.css"
+import "./portfolio.css"
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
-const bebasNeue = Bebas_Neue({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-bebas"
-})
-const sourceSans = Source_Sans_3({
-  subsets: ["latin"],
-  variable: "--font-source-sans",
-  weight: ["300", "400", "500", "600", "700"]
-})
+const interTight = Inter_Tight({ subsets: ["latin"], variable: "--font-inter-tight", weight: ["400", "500", "600", "700", "800"] })
+const plexMono = IBM_Plex_Mono({ subsets: ["latin"], variable: "--font-plex-mono", weight: ["400", "500", "600"] })
+// The name in the left column changes weight and width near the cursor, so
+// Roboto Flex loads as a variable font with those axes.
+const robotoFlex = Roboto_Flex({ subsets: ["latin"], variable: "--font-roboto-flex", axes: ["wdth", "opsz"] })
 
-// 根布局的默认元数据（会被页面级元数据覆盖）
+const DESCRIPTION = `${profile.name}, Duke CS student and AI/ML engineer. ${profile.summary} ${profile.target}`
+
+// Default metadata; pages may override it.
 export const metadata: Metadata = {
   // Social preview images resolve against the real site, not localhost.
   metadataBase: new URL("https://lumanzhan.com"),
   ...generateSEOMetadata({
     title: "Luman (Grace) Zhan, AI/ML Engineer",
-    description: "Luman (Grace) Zhan, Duke CS student and AI/ML engineer who builds LLM systems and measures whether they work: agents on Amazon Bedrock AgentCore with MCP, and LLM evaluation validated against people. Looking for Summer 2027 AI/ML and software engineering internships.",
+    description: DESCRIPTION,
     keywords: ["AI/ML engineer", "LLM evaluation", "AI agents", "Amazon Bedrock AgentCore"],
   }),
   icons: {
@@ -45,8 +43,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${bebasNeue.variable} ${sourceSans.variable}`}>
-      <body className={`${sourceSans.className} antialiased`}>{children}</body>
+    <html lang="en" className={`${interTight.variable} ${plexMono.variable} ${robotoFlex.variable}`}>
+      <body className="antialiased">{children}</body>
     </html>
   )
 }

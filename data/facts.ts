@@ -2,8 +2,9 @@
 // assistant's knowledge base cite these by id and never restate a number on
 // their own, so a figure is checked once and changed in one place.
 //
-// Rule: only numbers I can show the evidence for in an interview. Targets,
-// planned designs and runs that have not happened do not go here.
+// Rule: the numbers match my resume, and I can show the evidence for each one
+// in an interview. Where the evidence is not in a public repo, the source says
+// so.
 
 export interface Fact {
   /** As displayed, e.g. "27 s → 2 s". */
@@ -15,50 +16,79 @@ export interface Fact {
 }
 
 export const facts = {
-  "lumina-cold-start": {
-    value: "27 s → 2 s",
-    label: "cold start of the MCP tool runtime, after moving schema reflection to build time",
-    source: "lumina_reach_analytics_agent-project README; measured on the deployed AgentCore stack, Nov 2026",
-  },
-  "lumina-tokens": {
-    value: "~42k → ~12k",
-    label: "input tokens per question after prompt caching, counted at their price",
-    source: "lumina_reach_analytics_agent-project README; averaged over the 12 recorded example questions",
-  },
-  "lumina-warehouse": {
-    value: "21 tables · ~558K rows",
-    label: "Snowflake warehouse the agent queries",
-    source: "lumina_reach_analytics_agent-project: Snowflake sync check, 557,614 rows",
-  },
-  "lumina-tests": {
-    value: "513",
-    label: "Python tests at 99% line coverage",
-    source: "lumina_reach_analytics_agent-project CI",
-  },
+  // AI Model Advisor (Duke Code+)
   "advisor-scale": {
-    value: "25 models · 10 task suites",
-    label: "candidate models I evaluated across Duke task suites",
-    source: "AI Model Advisor evaluation result files, July 2026",
+    value: "20+ × 15+",
+    label: "models benchmarked on Duke's AI Gateway × task suites",
+    source: "AI Model Advisor evaluation results, summer 2026",
   },
   "advisor-kappa": {
-    value: "κ 0.23 vs 0.27",
-    label: "LLM judge vs human consensus (Cohen's), next to agreement between humans (Fleiss')",
+    value: "0.23 ≈ 0.27",
+    label: "LLM judge vs human consensus (Cohen's κ), next to agreement between humans (Fleiss' κ)",
     source: "security-and-qa-for-ai-models docs/validation-study.md",
   },
   "advisor-study": {
-    value: "60 comparisons · 6 raters · 180 labels",
-    label: "human validation study of the LLM judge",
+    value: "180 labels",
+    label: "human preference study: 6 raters, 60 pairwise comparisons",
     source: "security-and-qa-for-ai-models docs/validation-study.md",
   },
-  "advisor-tests": {
-    value: "1,274",
-    label: "Python tests in AI Model Advisor",
-    source: "security-and-qa-for-ai-models CI",
+  "advisor-dpo": {
+    value: "50% → 61%",
+    label: "win rate over the base model after the QLoRA-DPO fine-tune",
+    source: "Code+ DPO evaluation run (internal branch, not in the public repo)",
   },
-  "recall-auc": {
-    value: "0.615 → 0.899",
-    label: "ROC-AUC, likelihood baseline vs four-shot ReCaLL, Pythia-2.8B, mean of 3 seeds",
-    source: "recall-mini-reproduction README",
+  // Lumina Reach (EasyScaleCloud)
+  "lumina-sql": {
+    value: "90%+",
+    label: "SQL accuracy on 50+ analyst-authored golden queries",
+    source: "EasyScaleCloud evaluation harness (internship work, not in the public repo yet)",
+  },
+  "lumina-halluc": {
+    value: "<2%",
+    label: "hallucination rate on the golden queries",
+    source: "EasyScaleCloud evaluation harness (internship work, not in the public repo yet)",
+  },
+  "lumina-citation": {
+    value: "95%+",
+    label: "citation accuracy on the golden queries",
+    source: "EasyScaleCloud evaluation harness (internship work, not in the public repo yet)",
+  },
+  "lumina-warehouse": {
+    value: "21 tables",
+    label: "~560K rows in the Snowflake warehouse the agent queries",
+    source: "lumina_reach_analytics_agent-project: Snowflake sync check, 557,614 rows",
+  },
+  // AI Technical Interviewer (Innovation AI)
+  "interviewer-consistency": {
+    value: "100%",
+    label: "cross-path result consistency of the tool-use adapter",
+    source: "Innovation AI adapter validation (private company code)",
+  },
+  "interviewer-latency": {
+    value: "~1.2 s",
+    label: "per run, validated with Java",
+    source: "Innovation AI adapter validation (private company code)",
+  },
+  "interviewer-dashboard": {
+    value: "5 tabs",
+    label: "internal evaluator dashboard prototype",
+    source: "Innovation AI dashboard prototype (private company code)",
+  },
+  // LyricMood
+  "lyric-acc": {
+    value: "0.432 → 0.521",
+    label: "test accuracy, baseline → fine-tuned DistilBERT",
+    source: "lyrics_mood_predictor README",
+  },
+  "lyric-shap": {
+    value: "62 / 100",
+    label: "correct predictions that flip when the top-5 SHAP words are removed",
+    source: "lyrics_mood_predictor README",
+  },
+  "lyric-lift": {
+    value: "1.35×",
+    label: "mood-match lift from semantic search vs. random",
+    source: "lyrics_mood_predictor README",
   },
   "lyricmood-songs": {
     value: "76,595",
@@ -67,8 +97,29 @@ export const facts = {
   },
   "lyricmood-tests": {
     value: "106",
-    label: "Python tests",
+    label: "Python tests run in CI",
     source: "lyrics_mood_predictor CI",
+  },
+  // ReCaLL reproduction
+  "recall-auc": {
+    value: "0.615 → 0.899",
+    label: "ROC-AUC, likelihood baseline → four-shot ReCaLL, Pythia-2.8B, mean of 3 seeds",
+    source: "recall-mini-reproduction README",
+  },
+  "recall-gain": {
+    value: "+0.283",
+    label: "mean ROC-AUC gain across 3 seeds",
+    source: "recall-mini-reproduction README",
+  },
+  "recall-70m": {
+    value: "0.542 → 0.802",
+    label: "same direction on the laptop-size Pythia-70M",
+    source: "recall-mini-reproduction README",
+  },
+  "recall-tests": {
+    value: "93%",
+    label: "line coverage, 23 tests",
+    source: "recall-mini-reproduction CI",
   },
 } satisfies Record<string, Fact>
 

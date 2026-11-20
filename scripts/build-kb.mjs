@@ -24,30 +24,62 @@ function month(value) {
   return `${MONTHS[Number(m) - 1]} ${year}`;
 }
 
-function factLines(ids) {
-  return ids.map((id) => `- ${facts[id].value}: ${facts[id].label} (source: ${facts[id].source})`);
-}
+const bold = (text) => text.replace(/\*\*/g, "");
 
 function profileSection() {
   return [
     "## About Grace",
     "",
     `- Name: ${profile.name}. She goes by ${profile.preferredName}.`,
-    `- Headline: ${profile.headline}.`,
-    `- In her words: ${profile.thesis}`,
+    `- ${profile.role}.`,
+    `- Summary: ${profile.summary}`,
     `- ${profile.target}`,
+    `- Status: ${profile.status}.`,
     `- Based in ${profile.location}.`,
     `- Email: ${profile.email}`,
     `- GitHub: ${profile.links.github}`,
     `- LinkedIn: ${profile.links.linkedin}`,
+    `- Resume (one-page PDF): the Resume tab of the site, ${profile.resume.pdf}`,
+    "",
+    ...profile.about.map((p) => `In her words: ${bold(p)}`),
+    "",
+    `How she works: ${profile.howIWork}`,
   ];
 }
 
 function educationSection() {
   return [
     "## Education",
+    ...profile.education.flatMap((s) => [
+      "",
+      `### ${s.school}: ${s.degree} (${s.when})`,
+      "",
+      `- ${s.focus}. ${s.gpa}.`,
+      `- Coursework: ${s.courses.join(", ")}.`,
+    ]),
+  ];
+}
+
+function skillsSection() {
+  return ["## Technical skills", "", ...profile.skills.map((g) => `- ${g.label}: ${g.items.join(", ")}.`)];
+}
+
+function itemLines(item, doneLabel) {
+  return [
     "",
-    ...profile.education.map((s) => `- ${s.school}: ${s.degree}. ${s.dates}. ${s.detail}.`),
+    item.summary,
+    "",
+    "Numbers:",
+    ...item.stats.map((s) => `- ${facts[s.factId].value}: ${s.caption}`),
+    "",
+    `${doneLabel}:`,
+    ...item.points.map((p) => `- ${p.title}: ${p.text}`),
+    "",
+    "Why it matters:",
+    ...item.why.map((w) => `- ${w.title} ${w.text}`),
+    "",
+    `- Stack: ${item.stack.join(", ")}`,
+    ...item.links.map((l) => `- ${l.label.replace(/ →$/, "")}: ${l.href}`),
   ];
 }
 
@@ -56,41 +88,43 @@ function experienceSection() {
     "## Experience (newest first)",
     ...experience.flatMap((e) => [
       "",
-      `### ${e.role}, ${e.org} (${month(e.start)} – ${month(e.end)}, ${e.location})`,
-      "",
-      e.summary,
-      "",
-      ...e.highlights.map((h) => `- ${h}`),
-      `- Stack: ${e.stack.join(", ")}`,
-      ...(e.link ? [`- Link: ${e.link.href}`] : []),
+      `### ${e.title}: ${e.role}, ${e.org} (${month(e.start)} – ${month(e.end)}, ${e.location})`,
+      ...itemLines(e, "What she did"),
     ]),
   ];
 }
 
 function projectsSection() {
   return [
-    "## Featured projects",
+    "## Personal projects",
     ...projects.flatMap((p) => [
       "",
-      `### ${p.name} (${p.context})`,
+      `### ${p.title} (${p.kind})`,
       "",
-      p.proves,
-      ...(p.myPart ? ["", `Grace's part: ${p.myPart}`] : []),
-      "",
-      `- Stack: ${p.stack.join(", ")}`,
-      `- Code: ${p.links.code}`,
-      ...(p.links.demo ? [`- Live demo: ${p.links.demo}`] : []),
+      p.meta + ".",
+      ...itemLines(p, "How she built it"),
     ]),
   ];
 }
 
 function factsSection() {
   return [
-    "## Verified numbers",
+    "## Numbers and where they come from",
     "",
-    "Each number below has a source Grace can show. Quote them exactly; do not round, combine or extrapolate.",
+    "Quote these exactly; do not round, combine or extrapolate. Some evidence is internal (not in a public repo); say so if asked where to check.",
     "",
-    ...factLines(Object.keys(facts)),
+    ...Object.values(facts).map((f) => `- ${f.value}: ${f.label} (source: ${f.source})`),
+  ];
+}
+
+// Repeated last, right before the visitor's question: small models follow the
+// format best when it is the final thing they read, and the layout above is
+// for reference, not for copying.
+function answerFormatSection() {
+  return [
+    "## How to answer (repeats RULE 5)",
+    "",
+    "Summarize; do not copy the layout of this knowledge base. Write one sentence that answers the question, then two to four bullets, each a single line that starts with a bold label and a colon, like `- **Label:** text`. Nothing after the last bullet.",
   ];
 }
 
@@ -99,9 +133,11 @@ export function buildKnowledgeBase() {
     ["# Knowledge base: Luman (Grace) Zhan", "", "Generated from the site's data/ files by scripts/build-kb.mjs. Do not edit by hand."],
     profileSection(),
     educationSection(),
+    skillsSection(),
     experienceSection(),
     projectsSection(),
     factsSection(),
+    answerFormatSection(),
   ];
   return sections.map((lines) => lines.join("\n")).join("\n\n") + "\n";
 }

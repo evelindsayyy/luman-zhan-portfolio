@@ -1,123 +1,124 @@
-"use client";
+"use client"
 
-import type { UIMessage } from "ai";
-import { motion } from "framer-motion";
-import Image from "next/image";
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import type { UIMessage } from "ai"
 
-import { Markdown } from "./markdown";
-import { cn } from "@/lib/utils";
-import { CDN_ASSETS } from "@/lib/constants";
+import { relatedLinks } from "@/data/follow-ups"
+import { Markdown } from "./markdown"
 
-export const PreviewMessage = ({
-  message,
-  append,
-}: {
-  chatId: string;
-  message: UIMessage;
-  isLoading: boolean;
-  append?: (message: any) => Promise<string | null | undefined>;
-}) => {
+const THINKING = ["Reading her resume…", "Checking the numbers…", "Writing the answer…"]
+const THINKING_STEP_MS = 900
+
+export function messageText(message: UIMessage): string {
+  return message.parts
+    .map((part) => (part.type === "text" ? part.text : ""))
+    .join("")
+}
+
+function UserAvatar() {
   return (
-    <motion.div
-      className="w-full mx-auto max-w-3xl group/message"
-      initial={{ y: 5, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      data-role={message.role}
-    >
-      <div
-        className={cn(
-          "flex gap-3 w-full",
-          message.role === "user" ? "justify-end" : "justify-start"
-        )}
-      >
-        {/* AI Assistant Avatar - Left side */}
-        {message.role === "assistant" && (
-          <div className="w-8 h-8 flex items-center justify-center bg-accent shrink-0">
-            <span className="font-display text-xs text-white">AI</span>
-          </div>
-        )}
+    <div className="av user" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21a8 8 0 0 1 16 0" />
+      </svg>
+    </div>
+  )
+}
 
-        <div
-          className={cn(
-            "flex flex-col gap-2 max-w-[85%] sm:max-w-[75%] p-4",
-            message.role === "user"
-              ? "bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white"
-              : "bg-white dark:bg-black border-2 border-black dark:border-white"
-          )}
-        >
-          {/* AI SDK v5: Use parts instead of content */}
-          {message.parts && message.parts.length > 0 && (
-            <div className="flex flex-col gap-4">
-              {message.parts.map((part: any, index: number) => {
-                if (part.type === 'text' && part.text) {
-                  return (
-                    <div
-                      key={index}
-                      className={cn(
-                        message.role === "assistant"
-                          ? "text-black dark:text-white"
-                          : "text-white dark:text-black"
-                      )}
-                    >
-                      <Markdown
-                        variant="chat"
-                        onQuestionClick={(question) => {
-                          append?.({
-                            role: 'user',
-                            content: question,
-                          });
-                        }}
-                      >
-                        {part.text}
-                      </Markdown>
-                    </div>
-                  );
-                }
-                return null;
-              })}
+const AiAvatar = () => (
+  <div className="av" aria-hidden="true">
+    AI
+  </div>
+)
+
+function CopyButton({ text }: { text: string }) {
+  const [label, setLabel] = useState("Copy")
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setLabel("Copied")
+    } catch (err) {
+      console.error("copy failed", err)
+      setLabel("Copy failed")
+    }
+    setTimeout(() => setLabel("Copy"), 1400)
+  }
+  return (
+    <div className="tools">
+      <button type="button" onClick={copy}>
+        {label}
+      </button>
+    </div>
+  )
+}
+
+/** One message. A finished answer also gets Copy and links to where it lives on the site. */
+export function PreviewMessage({ message, done }: { message: UIMessage; done: boolean }) {
+  const text = messageText(message)
+  if (message.role === "user") {
+    return (
+      <div className="row me">
+        <div className="bubble">{text}</div>
+        <UserAvatar />
+      </div>
+    )
+  }
+  const related = done ? relatedLinks(text) : []
+  return (
+    <div className="row ai">
+      <AiAvatar />
+      <div className="bubble">
+        <Markdown>{text}</Markdown>
+        {related.length > 0 && (
+          <details className="srcs">
+            <summary>Related on this site · {related.length}</summary>
+            <div>
+              {related.map((l) => (
+                <Link key={l.href} href={l.href}>
+                  Open {l.label} →
+                </Link>
+              ))}
             </div>
-          )}
-        </div>
-
-        {/* User Avatar - Right side */}
-        {message.role === "user" && (
-          <div className="w-8 h-8 overflow-hidden border-2 border-black dark:border-white shrink-0">
-            <Image
-              src={CDN_ASSETS.PROFILE_PHOTO}
-              alt="User Profile"
-              width={32}
-              height={32}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          </details>
         )}
+        {done && text && <CopyButton text={text} />}
       </div>
-    </motion.div>
-  );
-};
+    </div>
+  )
+}
 
-export const ThinkingMessage = () => {
-  const role = "assistant";
-
+/** Shown until the first words stream in. */
+export function ThinkingMessage() {
+  const [step, setStep] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setStep((s) => Math.min(s + 1, THINKING.length - 1)), THINKING_STEP_MS)
+    return () => clearInterval(id)
+  }, [])
   return (
-    <motion.div
-      className="w-full mx-auto max-w-3xl group/message"
-      initial={{ y: 5, opacity: 0 }}
-      animate={{ y: 0, opacity: 1, transition: { delay: 1 } }}
-      data-role={role}
-    >
-      <div className="flex gap-3 w-full justify-start">
-        <div className="w-8 h-8 flex items-center justify-center bg-accent shrink-0">
-          <span className="font-display text-xs text-white">AI</span>
-        </div>
-
-        <div className="p-4 bg-white dark:bg-black border-2 border-black dark:border-white">
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-            <span className="inline-block w-2 h-2 bg-accent animate-pulse" />
-            <span className="font-display text-sm uppercase">THINKING...</span>
-          </div>
+    <div className="row ai">
+      <AiAvatar />
+      <div className="bubble">
+        <div className="thinking">
+          <span className="pulse" />
+          <span>{THINKING[step]}</span>
         </div>
       </div>
-    </motion.div>
-  );
-};
+    </div>
+  )
+}
+
+/** Shown when the request itself fails (the server's own fallback arrives as a normal answer). */
+export function ErrorMessage({ text }: { text: string }) {
+  return (
+    <div className="row ai" role="alert">
+      <AiAvatar />
+      <div className="bubble">
+        <div className="ans">
+          <p>{text}</p>
+        </div>
+      </div>
+    </div>
+  )
+}

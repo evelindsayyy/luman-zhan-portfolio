@@ -1,205 +1,83 @@
-"use client";
+"use client"
 
-import type { ChatRequestOptions, UIMessage } from "ai";
-import { motion } from "framer-motion";
-import type React from "react";
-import {
-  useRef,
-  useEffect,
-  useCallback,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
-import { toast } from "sonner";
-import { useLocalStorage, useWindowSize } from "usehooks-ts";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react"
 
-import { cn, sanitizeUIMessages } from "@/lib/utils";
+const PLACEHOLDERS = [
+  "Ask about Grace’s work…",
+  "Try: How did Grace validate the LLM judge?",
+  "Try: How does LyricMood work?",
+  "Try: What are Grace’s technical skills?",
+]
+const PLACEHOLDER_MS = 3500
+const MAX_ROWS_PX = 160
 
-import { ArrowUpIcon, StopIcon } from "./icons";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import suggestedActionsData from "@/data/suggested-actions.json";
-
-const suggestedActions = suggestedActionsData;
-
+// The composer: a growing text field with a send button that turns into a
+// stop button while an answer streams. Enter sends, Shift+Enter adds a line.
 export function MultimodalInput({
-  chatId,
   input,
   setInput,
+  onSend,
   isLoading,
   stop,
-  messages,
-  setMessages,
-  append,
-  handleSubmit,
-  className,
 }: {
-  chatId: string;
-  input: string;
-  setInput: (value: string) => void;
-  isLoading: boolean;
-  stop: () => void;
-  messages: Array<UIMessage>;
-  setMessages: Dispatch<SetStateAction<Array<UIMessage>>>;
-  append: (
-    message: any,
-    chatRequestOptions?: ChatRequestOptions,
-  ) => Promise<string | null | undefined>;
-  handleSubmit: (
-    event?: {
-      preventDefault?: () => void;
-    },
-    chatRequestOptions?: ChatRequestOptions,
-  ) => void;
-  className?: string;
+  input: string
+  setInput: (value: string) => void
+  onSend: () => void
+  isLoading: boolean
+  stop: () => void
 }) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { width } = useWindowSize();
+  const ref = useRef<HTMLTextAreaElement>(null)
+  const [ph, setPh] = useState(0)
 
   useEffect(() => {
-    if (textareaRef.current) {
-      adjustHeight();
-    }
-  }, []);
-
-  const adjustHeight = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight + 2}px`;
-    }
-  };
-
-  const [localStorageInput, setLocalStorageInput] = useLocalStorage(
-    "input",
-    "",
-  );
+    const id = setInterval(() => {
+      if (!ref.current?.value && document.activeElement !== ref.current) setPh((p) => (p + 1) % PLACEHOLDERS.length)
+    }, PLACEHOLDER_MS)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
-    if (textareaRef.current) {
-      const domValue = textareaRef.current.value;
-      const finalValue = domValue || localStorageInput || "";
-      setInput(finalValue);
-      adjustHeight();
-    }
-  }, []);
+    const el = ref.current
+    if (!el) return
+    el.style.height = "auto"
+    el.style.height = `${Math.min(el.scrollHeight, MAX_ROWS_PX)}px`
+  }, [input])
 
-  useEffect(() => {
-    setLocalStorageInput(input);
-  }, [input, setLocalStorageInput]);
+  const submit = (e?: FormEvent) => {
+    e?.preventDefault()
+    if (isLoading || !input.trim()) return
+    onSend()
+  }
 
-  const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(event.target.value);
-    adjustHeight();
-  };
-
-  const submitForm = useCallback(() => {
-    handleSubmit(undefined, {});
-    setLocalStorageInput("");
-
-    if (width && width > 768) {
-      textareaRef.current?.focus();
-    }
-  }, [handleSubmit, setLocalStorageInput, width]);
+  const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) submit(e)
+  }
 
   return (
-    <div className="relative w-full flex flex-col gap-3">
-      {/* Suggested Questions */}
-      {messages.length === 0 && (
-        <div className="flex flex-col gap-3">
-          <div className="border-2 border-black dark:border-white p-3 bg-white dark:bg-black">
-            <p className="font-display text-sm text-black dark:text-white text-center uppercase tracking-wider">
-              ASK ME DIRECTLY OR CLICK A SUGGESTION
-            </p>
-          </div>
-
-          <div className="max-h-[320px] sm:max-h-[280px] overflow-y-auto">
-            <div className="grid sm:grid-cols-2 gap-2 w-full pr-1">
-              {suggestedActions.map((suggestedAction, index) => (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ delay: 0.05 * index }}
-                  key={`suggested-action-${suggestedAction.title}-${index}`}
-                >
-                  <Button
-                    variant="ghost"
-                    onClick={async () => {
-                      append({
-                        role: "user",
-                        content: suggestedAction.action,
-                      });
-                    }}
-                    className="group text-left border-2 border-black dark:border-white bg-white dark:bg-black hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black px-4 py-3 text-sm flex-1 gap-1 sm:flex-col w-full h-auto justify-start items-start transition-all cursor-pointer rounded-none"
-                  >
-                    <span className="font-display text-sm uppercase tracking-wider">
-                      {suggestedAction.title}
-                    </span>
-                    <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-current leading-snug transition-colors normal-case">
-                      {suggestedAction.label}
-                    </span>
-                  </Button>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
+    <form onSubmit={submit}>
+      <textarea
+        ref={ref}
+        rows={1}
+        value={input}
+        placeholder={PLACEHOLDERS[ph]}
+        aria-label="Your question"
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={onKeyDown}
+        autoFocus
+      />
+      {isLoading ? (
+        <button type="button" aria-label="Stop the answer" onClick={stop}>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="6" y="6" width="12" height="12" rx="2" />
+          </svg>
+        </button>
+      ) : (
+        <button type="submit" aria-label="Send" disabled={!input.trim()}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
       )}
-
-      {/* User Message Input Form */}
-      <div className="relative">
-        <Textarea
-          ref={textareaRef}
-          placeholder="ENTER YOUR QUESTION..."
-          value={input}
-          onChange={handleInput}
-          className={cn(
-            "min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none !text-base",
-            "bg-white dark:bg-black border-2 border-black dark:border-white rounded-none",
-            "focus:border-accent focus:ring-accent focus:ring-2",
-            "text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 placeholder:uppercase placeholder:tracking-wider",
-            "pr-12",
-            className,
-          )}
-          rows={3}
-          autoFocus
-          onKeyDown={(event) => {
-            if (event.key === "Enter" && !event.shiftKey) {
-              event.preventDefault();
-
-              if (isLoading) {
-                toast.error("Please wait for the response to complete!");
-              } else {
-                submitForm();
-              }
-            }
-          }}
-        />
-
-        {isLoading ? (
-          <Button
-            className="p-2 h-fit absolute bottom-2 right-2 bg-white dark:bg-black border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black cursor-pointer rounded-none"
-            onClick={(event) => {
-              event.preventDefault();
-              stop();
-              setMessages((messages) => sanitizeUIMessages(messages));
-            }}
-          >
-            <StopIcon size={16} />
-          </Button>
-        ) : (
-          <Button
-            className="p-2 h-fit absolute bottom-2 right-2 bg-accent border-2 border-accent hover:bg-black hover:border-black text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer rounded-none"
-            onClick={(event) => {
-              event.preventDefault();
-              submitForm();
-            }}
-            disabled={input.length === 0}
-          >
-            <ArrowUpIcon size={16} />
-          </Button>
-        )}
-      </div>
-    </div>
-  );
+    </form>
+  )
 }

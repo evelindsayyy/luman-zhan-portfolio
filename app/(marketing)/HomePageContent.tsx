@@ -1,40 +1,15 @@
-"use client"
+import LeftColumn from "./_components/LeftColumn"
+import { Glow } from "@/components/pointer-effects"
+import SectionTabs from "./_components/SectionTabs"
 
-import Hero from "./_components/Hero"
-import StatsSection from "./_components/StatsSection"
-import ProjectsSection from "./_components/ProjectsSection"
-import ExperienceSection from "./_components/ExperienceSection"
-import ContactSection from "./_components/ContactSection"
-import { profile } from "@/data/profile"
-
+// Two columns: who I am on the left (sticky), four tabs on the right.
 export default function HomePageContent() {
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white font-body">
-      {/* Main Content */}
-      <div className="relative">
-        {/* Hero Section - Split Screen */}
-        <Hero />
-
-        {/* Numbers a visitor can check */}
-        <StatsSection />
-
-        {/* Featured projects */}
-        <ProjectsSection />
-
-        {/* Work, research and education */}
-        <ExperienceSection />
-
-        {/* Contact Section */}
-        <ContactSection />
-
-        {/* Footer */}
-        <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t-4 border-black dark:border-white">
-          <div className="max-w-7xl mx-auto text-center">
-            <p className="font-display text-sm text-gray-600 dark:text-gray-400 uppercase tracking-widest">
-              &copy; {new Date().getFullYear()} {profile.name.toUpperCase()}
-            </p>
-          </div>
-        </footer>
+    <div className="pf">
+      <Glow />
+      <div className="page">
+        <LeftColumn />
+        <SectionTabs />
       </div>
     </div>
   )

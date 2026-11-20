@@ -68,10 +68,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-bebas)", "sans-serif"],
-        body: ["var(--font-source-sans)", "sans-serif"],
-        heading: ["var(--font-bebas)", "sans-serif"],
-        inter: ["var(--font-inter)", "sans-serif"],
+        display: ["var(--font-roboto-flex)", "sans-serif"],
+        body: ["var(--font-inter-tight)", "sans-serif"],
+        heading: ["var(--font-inter-tight)", "sans-serif"],
+        mono: ["var(--font-plex-mono)", "monospace"],
       },
       fontSize: {
         "display-xl": ["clamp(4rem, 15vw, 12rem)", { lineHeight: "0.9", letterSpacing: "-0.02em" }],

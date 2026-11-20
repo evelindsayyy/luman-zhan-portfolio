@@ -4,9 +4,6 @@
 
 :root {
   /* Font Variables */
-  --font-bebas: "Bebas Neue", sans-serif;
-  --font-source-sans: "Source Sans 3", sans-serif;
-  --font-inter: "Inter", sans-serif;
 
   /* Option B: Bold Black & White */
   --background: #FFFFFF;
@@ -127,16 +124,12 @@
   }
 
   body {
-    font-family: var(--font-source-sans), var(--font-inter), sans-serif;
+    font-family: var(--font-inter-tight), system-ui, sans-serif;
     background-color: var(--background);
     color: var(--foreground);
     @apply antialiased;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-bebas), var(--font-inter), sans-serif;
-    @apply font-normal tracking-wide uppercase;
-  }
 }
 
 @layer components {
@@ -194,34 +187,22 @@
   }
 }
 
-/* Custom scrollbar - Bold style */
+/* Scrollbar: thin and light, to match the site's light look */
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #FFFFFF;
-  border-left: 2px solid #000000;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #000000;
+  background: #D3D6E0;
+  border-radius: 999px;
+  border: 2px solid #F5F6FB;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3B82F6;
-}
-
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-track {
-  background: #000000;
-  border-left: 2px solid #FFFFFF;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #FFFFFF;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #3B82F6;
+  background: #3B4BD8;
 }

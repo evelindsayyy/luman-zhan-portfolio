@@ -1,22 +1,22 @@
 [
   {
-    "title": "🧪 LLM evaluation",
-    "label": "How she checked an LLM judge against people",
-    "action": "How did Grace check that the LLM judge at Duke Code+ agrees with human raters?"
+    "title": "Experience",
+    "label": "What she built in her internships",
+    "action": "What did Grace build in her internships?"
   },
   {
-    "title": "🤖 Agents on AWS",
-    "label": "The Lumina Reach architecture",
-    "action": "Walk me through the architecture of Lumina Reach on Amazon Bedrock AgentCore."
+    "title": "Projects",
+    "label": "LyricMood and the ReCaLL reproduction",
+    "action": "Tell me about Grace’s personal projects."
   },
   {
-    "title": "💼 Experience",
-    "label": "Internships and research",
-    "action": "Summarize Grace's internships and research experience."
+    "title": "About me",
+    "label": "Background and how she works",
+    "action": "Who is Grace?"
   },
   {
-    "title": "🎯 What's next",
-    "label": "Roles she is looking for",
-    "action": "What roles is Grace looking for, and when is she available?"
+    "title": "What's next",
+    "label": "Roles and availability",
+    "action": "What roles is Grace looking for?"
   }
 ]
